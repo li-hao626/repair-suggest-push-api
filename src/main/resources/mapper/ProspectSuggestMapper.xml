@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.smec.repair.suggest.push.dao.ProspectSuggestDao">
+    <resultMap id="aMap" type="com.smec.repair.suggest.push.vo.ProspectSuggestVO">
+        <id column="ID" property="id"/>
+        <result column="BISMT" property="bismt"/>
+        <result column="ELE_TYPE" property="eleType"/>
+        <result column="MNT_CONTRACT_NO" property="mntContractNo"/>
+        <result column="CUSTOMER_NAME" property="customerName"/>
+        <result column="PROJECT_NAME" property="projectName"/>
+    </resultMap>
+    <select id="findAllByAssignee" parameterType="String" resultMap="aMap">
+        SELECT rme.id,
+            rme.bismt,
+            mme.ele_type,
+            mc.mnt_contract_no,
+            mcu.customer_name,
+            mep.name project_name
+        FROM repair_md_elevator rme,
+             mnt_md_elevator mme,
+             md_elevator me,
+             mnt_contract mc,
+             md_customer mcu,
+             md_ele_project mep,
+             fnd_organization_path_mv opm,
+             repair_ele_survey_suggest ress
+        WHERE rme.bismt = mme.bismt(+)
+          AND mme.matnr = me.matnr(+)
+          AND me.mnt_contract_id = mc.mnt_contract_id(+)
+          AND mc.customer_id = mcu.customer_id(+)
+          AND me.project_id = mep.id(+)
+          AND mc.org_id = opm.org_id
+          AND rme.bismt = ress.bismt
+          AND rme.push_status = 'pushed'
+          AND ress.assignee = #{assignee}
+    </select>
+</mapper>
